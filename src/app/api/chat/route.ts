@@ -14,7 +14,6 @@ if (!BUCKET_NAME) {
   throw new Error('S3_BUCKET_NAME 환경 변수가 설정되지 않았습니다.');
 }
 
-
 // S3에 기록 저장하는 함수
 const saveHistoryToS3 = async (history: Content[], fileName: string) => {
   if (!BUCKET_NAME) {
@@ -30,6 +29,7 @@ const saveHistoryToS3 = async (history: Content[], fileName: string) => {
 
   return s3.putObject(params).promise(); // S3에 데이터를 저장
 };
+
 // S3에서 기록 불러오는 함수
 const loadHistoryFromS3 = async (fileName: string): Promise<Content[]> => {
   const params = {
@@ -57,7 +57,7 @@ export async function POST(request: NextRequest) {
 
   try {
     const { message, history } = await request.json();
-    let parsedHistory: Content[] = history || [];
+    const parsedHistory: Content[] = history || []; // const로 선언
 
     // 중복된 사용자 메시지가 기록되지 않도록 방지
     if (parsedHistory.length > 0 && parsedHistory[parsedHistory.length - 1].role === 'user' && parsedHistory[parsedHistory.length - 1].parts[0].text === message) {
@@ -87,7 +87,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ reply });
 
-  } catch (error: any) {
+  } catch (error: unknown) { // error 타입을 unknown으로 변경
     const errorMessage = error instanceof Error ? error.message : '알 수 없는 오류가 발생했습니다.';
     console.error('Error details:', error);
 
@@ -101,7 +101,7 @@ export async function GET() {
   try {
     const history = await loadHistoryFromS3(fileName);
     return NextResponse.json({ history });
-  } catch (error: any) {
+  } catch (error: unknown) { // error 타입을 unknown으로 변경
     const errorMessage = error instanceof Error ? error.message : '알 수 없는 오류가 발생했습니다.';
     console.error('Error loading chat history:', error);
     return NextResponse.json({ error: errorMessage }, { status: 500 });
