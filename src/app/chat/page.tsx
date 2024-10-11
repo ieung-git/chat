@@ -5,7 +5,7 @@ import ReactMarkdown from 'react-markdown';
 
 export default function ChatPage() {
   const [message, setMessage] = useState("");
-  const [response, setResponse] = useState("");
+  const [response, setResponse] = useState(""); // 서버 응답을 보여줄 변수
   const [loading, setLoading] = useState(false);
   const [history, setHistory] = useState<{ role: string; parts: { text: string }[] }[]>([]);
   const messageListRef = useRef<HTMLDivElement>(null);
@@ -38,7 +38,7 @@ export default function ChatPage() {
 
   const handleSend = async () => {
     if (!message.trim()) {
-      setResponse("메시지를 입력해주세요.");
+      setResponse("메시지를 입력해주세요."); // 빈 메시지에 대한 경고
       return;
     }
 
@@ -52,19 +52,19 @@ export default function ChatPage() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ message, history }), // history에 미리 메시지를 추가하지 않음
+        body: JSON.stringify({ message, history }),
       });
 
       const data = await res.json();
 
       if (res.ok) {
-        // 서버 응답을 받고 나서만 history에 추가
+        // 서버 응답을 받고 나서 history에 추가
         setHistory((prevHistory) => [
           ...prevHistory,
-          { role: "user", parts: [{ text: message }] }, // 사용자 메시지 추가
-          { role: "model", parts: [{ text: data.reply }] } // 모델 응답 추가
+          { role: "user", parts: [{ text: message }] },
+          { role: "model", parts: [{ text: data.reply }] }
         ]);
-        setResponse(data.reply);
+        setResponse(data.reply); // 응답 저장
       } else {
         setResponse(data.error || "오류가 발생했습니다. 다시 시도해주세요.");
       }
@@ -97,6 +97,7 @@ export default function ChatPage() {
       </div>
 
       {loading && <p>로딩 중...</p>}
+      {response && <p>응답: {response}</p>} {/* 서버 응답을 화면에 표시 */}
       <div className="chatText">
         <textarea
           value={message}

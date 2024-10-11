@@ -30,7 +30,7 @@ export async function POST(request: NextRequest) {
 
   try {
     const { message, history } = await request.json();
-    let parsedHistory: Content[] = history || [];
+    const parsedHistory: Content[] = history || [];
 
     // 중복된 사용자 메시지가 기록되지 않도록 방지
     if (parsedHistory.length > 0 && parsedHistory[parsedHistory.length - 1].role === 'user' && parsedHistory[parsedHistory.length - 1].parts[0].text === message) {
@@ -60,7 +60,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ reply });
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     const errorMessage = error instanceof Error ? error.message : '알 수 없는 오류가 발생했습니다.';
     console.error('Error details:', error);
 
@@ -72,7 +72,7 @@ export async function GET() {
   try {
     const history = loadHistoryFromFile();
     return NextResponse.json({ history });
-  } catch (error: any) {
+  } catch (error: unknown) {
     const errorMessage = error instanceof Error ? error.message : '알 수 없는 오류가 발생했습니다.';
     console.error('Error loading chat history:', error);
     return NextResponse.json({ error: errorMessage }, { status: 500 });
