@@ -1,0 +1,36 @@
+/* theme */
+$themeBgColor: #081AF4;
+$themeFontSize: 62.5%;
+$themeFont: 'Pretendard',  sans-serif;
+$themeFontColor: #000;
+$themeOppFontColor: #fff;
+$themeRadius: 10px;
+$themePadding: 16px;
+$themeMargin: 16px;
+
+
+:root {
+  --swiper-theme-color: #081AF4 !important;
+  --vh: 100%;
+}
+
+@mixin mobile{
+  @media (max-width: 767px){ 
+    @content;
+  }
+}
+
+@mixin tablet{
+  @media (min-width: 768px) and (max-width: 1024px){
+    @content;
+  }
+}
+
+
+@include mobile { 
+  /*브라우저 사이즈767px이하일때*/
+}
+
+@include tablet {
+  /*브라우저 사이즈768px이상, 1023px 이하일때*/
+}
