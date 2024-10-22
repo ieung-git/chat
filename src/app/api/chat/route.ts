@@ -21,13 +21,15 @@ const saveHistoryToS3 = async (history: Content[], fileName: string) => {
   }
 
   const params = {
-    Bucket: BUCKET_NAME,  // 버킷 이름이 반드시 존재해야 함
+    Bucket: BUCKET_NAME,
     Key: `chat-history/${fileName}`,
     Body: JSON.stringify(history, null, 2),
     ContentType: 'application/json',
   };
 
-  return s3.putObject(params).promise(); // S3에 데이터를 저장
+  console.log('Saving history to S3:', JSON.stringify(history, null, 2));
+
+  return s3.putObject(params).promise();
 };
 
 // S3에서 기록 불러오는 함수
@@ -39,28 +41,33 @@ const loadHistoryFromS3 = async (fileName: string): Promise<Content[]> => {
 
   try {
     const data = await s3.getObject(params).promise();
-    const history = JSON.parse(data.Body!.toString('utf-8')); // S3에서 JSON 파싱
+    const history = JSON.parse(data.Body!.toString('utf-8'));
+    console.log('Loaded history from S3:', JSON.stringify(history, null, 2));
     return history;
   } catch (error) {
     console.error('Error loading history from S3:', error);
-    return []; // 파일이 없거나 오류 발생 시 빈 배열 반환
+    return [];
   }
 };
 
 export async function POST(request: NextRequest) {
   const API_KEY = process.env.NEXT_PUBLIC_GOOGLE_API_KEY;
-  const fileName = 'chat_history.json'; // S3에 저장할 파일 이름
+  const fileName = 'chat_history.json';
 
   if (!API_KEY) {
     return NextResponse.json({ error: 'API 키가 설정되지 않았습니다.' }, { status: 500 });
   }
 
   try {
-    const { message, history } = await request.json();
-    const parsedHistory: Content[] = history || []; // const로 선언
+    const { message } = await request.json();
+    
+    // S3에서 현재 히스토리 로드
+    let parsedHistory: Content[] = await loadHistoryFromS3(fileName);
 
     // 중복된 사용자 메시지가 기록되지 않도록 방지
-    if (parsedHistory.length > 0 && parsedHistory[parsedHistory.length - 1].role === 'user' && parsedHistory[parsedHistory.length - 1].parts[0].text === message) {
+    if (parsedHistory.length > 0 && 
+        parsedHistory[parsedHistory.length - 1].role === 'user' && 
+        parsedHistory[parsedHistory.length - 1].parts[0].text === message) {
       return NextResponse.json({ error: '중복된 메시지입니다.' });
     }
 
@@ -85,12 +92,11 @@ export async function POST(request: NextRequest) {
     // S3에 기록 저장
     await saveHistoryToS3(parsedHistory, fileName);
 
-    return NextResponse.json({ reply });
+    return NextResponse.json({ reply, history: parsedHistory });
 
-  } catch (error: unknown) { // error 타입을 unknown으로 변경
+  } catch (error: unknown) {
     const errorMessage = error instanceof Error ? error.message : '알 수 없는 오류가 발생했습니다.';
     console.error('Error details:', error);
-
     return NextResponse.json({ error: errorMessage }, { status: 500 });
   }
 }

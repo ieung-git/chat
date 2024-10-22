@@ -38,33 +38,28 @@ export default function ChatPage() {
 
   const handleSend = async () => {
     if (!message.trim()) {
-      setResponse("메시지를 입력해주세요."); // 빈 메시지에 대한 경고
+      setResponse("메시지를 입력해주세요.");
       return;
     }
-
-    if (loading) return; // 중복 요청 방지
-
+  
+    if (loading) return;
+  
     setLoading(true);
-
+  
     try {
       const res = await fetch("/api/chat", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ message, history }),
+        body: JSON.stringify({ message }),
       });
-
+  
       const data = await res.json();
-
+  
       if (res.ok) {
-        // 서버 응답을 받고 나서 history에 추가
-        setHistory((prevHistory) => [
-          ...prevHistory,
-          { role: "user", parts: [{ text: message }] },
-          { role: "model", parts: [{ text: data.reply }] }
-        ]);
-        setResponse(data.reply); // 응답 저장
+        setHistory(data.history);
+        setResponse("");
       } else {
         setResponse(data.error || "오류가 발생했습니다. 다시 시도해주세요.");
       }
@@ -73,7 +68,7 @@ export default function ChatPage() {
       setResponse("서버 오류가 발생했습니다.");
     } finally {
       setLoading(false);
-      setMessage(""); // 메시지 입력창 초기화
+      setMessage("");
     }
   };
 
@@ -99,15 +94,17 @@ export default function ChatPage() {
       {loading && <p>로딩 중...</p>}
       {response && <p>응답: {response}</p>} {/* 서버 응답을 화면에 표시 */}
       <div className="chatText">
-        <textarea
-          value={message}
-          onChange={(e) => setMessage(e.target.value)}
-          placeholder="메시지를 입력하세요"
-          disabled={loading}
-        />
-        <button onClick={handleSend} disabled={loading}>
-          {loading ? "보내는 중..." : "보내기"}
-        </button>
+        <div className="chat_q_box">
+          <textarea
+            value={message}
+            onChange={(e) => setMessage(e.target.value)}
+            placeholder="메시지를 입력하세요"
+            disabled={loading}
+          />
+          <button onClick={handleSend} disabled={loading}>
+            {loading ? "보내는 중..." : "보내기"}
+          </button>
+        </div>
       </div>
     </div>
   );
