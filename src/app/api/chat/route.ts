@@ -62,7 +62,7 @@ export async function POST(request: NextRequest) {
     const { message } = await request.json();
     
     // S3에서 현재 히스토리 로드
-    let parsedHistory: Content[] = await loadHistoryFromS3(fileName);
+    const parsedHistory: Content[] = await loadHistoryFromS3(fileName);
 
     // 중복된 사용자 메시지가 기록되지 않도록 방지
     if (parsedHistory.length > 0 && 

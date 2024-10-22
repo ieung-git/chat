@@ -1,8 +1,5 @@
 'use client';
 
-import Image from "next/image";
-import styles from "./page.module.css";
-
 import { Canvas } from '@react-three/fiber';
 import { OrbitControls, useGLTF } from '@react-three/drei';
 
